@@ -34,7 +34,7 @@ def main():
     w = watch.Watch()
     for item in w.stream(api.list_namespaced_persistent_volume_claim, namespace=ns, timeout_seconds=0):
         pvc = item['object']
-        
+
 
         # parse PVC events
         # new PVC added
@@ -43,31 +43,31 @@ def main():
             claimQty = unit.Quantity(size)
             total_claims = total_claims + claimQty
 
-            print("PVC Added: %s; size %s" % (pvc.metadata.name, size))
+            print(f"PVC Added: {pvc.metadata.name}; size {size}")
 
             if total_claims >= max_claims:
                 print("---------------------------------------------")
-                print("WARNING: claim overage reached; max %s; at %s" % (max_claims, total_claims))
+                print(f"WARNING: claim overage reached; max {max_claims}; at {total_claims}")
                 print("**** Trigger over capacity action ***")
                 print("---------------------------------------------")
-        
+
         # PVC is removed
         if item['type'] == 'DELETED':
             size = pvc.spec.resources.requests['storage']
             claimQty = unit.Quantity(size)
             total_claims = total_claims - claimQty
 
-            print("PVC Deleted: %s; size %s" % (pvc.metadata.name, size))
+            print(f"PVC Deleted: {pvc.metadata.name}; size {size}")
 
             if total_claims <= max_claims:
                 print("---------------------------------------------")
-                print("INFO: claim usage normal; max %s; at %s" % (max_claims, total_claims))
+                print(f"INFO: claim usage normal; max {max_claims}; at {total_claims}")
                 print("---------------------------------------------")
 
-        
+
         # PVC is UPDATED
         if item['type'] == "MODIFIED":
-            print("MODIFIED: %s" % (pvc.metadata.name))
+            print(f"MODIFIED: {pvc.metadata.name}")
 
         print("INFO: total PVC at %4.1f%% capacity" % ((total_claims/max_claims)*100))
 
